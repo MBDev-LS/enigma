@@ -10,6 +10,41 @@ class PlugboardConnection():
 
 	def checkForLetter(self, letterToCheck: str) -> bool:
 		return letterToCheck == self.letter0 or letterToCheck == self.letter1
+	
+
+	def getListOfLetters(self) -> tuple:
+		return (self.letter0, self.letter1)
+
+
+class Plugboard():
+	def __init__(self, plugboardList: list[PlugboardConnection] | None=None) -> None:
+		self.plugboardList = plugboardList if plugboardList != None else []
+
+		if self.validatePlugboardList() != True:
+			raise Exception(f"Invalid plugboardList '{plugboardList}'. Must not contain two or more PlugboardConnections with the same letter.")
+
+	
+	def validatePlugboardList(self, targetPlugboardList: list[PlugboardConnection] | None=None) -> bool:
+		targetList = targetPlugboardList if targetPlugboardList != None else self.plugboardList
+
+		lettersWithConnections = []
+		for plugboardConnection in targetList:
+			if plugboardConnection.letter0 in lettersWithConnections or plugboardConnection.letter1 in lettersWithConnections:
+				return False
+			
+			lettersWithConnections.append(plugboardConnection.letter0)
+			lettersWithConnections.append(plugboardConnection.letter1)
+	
+		return True
+	
+
+	def addConnection(self, newPlugboardConnection: PlugboardConnection) -> None:
+		proposedPlugboardList = self.plugboardList + [newPlugboardConnection]
+		if self.validatePlugboardList(proposedPlugboardList) != True:
+			raise Exception(f"Cannot add PlugboardConnections '{newPlugboardConnection}', contains letter already used in active connection.")
+		else:
+			self.plugboardList.append(newPlugboardConnection)
+	
 
 
 
@@ -30,8 +65,8 @@ class Rotor():
 
 
 class EngimaMachine():
-	def __init__(self, plugboardList: list[PlugboardConnection], rotorList: list[str], reflector) -> None:
-		self.plugboardList = plugboardList
+	def __init__(self, plugboard: Plugboard, rotorList: list[str], reflector) -> None:
+		self.plugboard = plugboard
 		self.rotorList = rotorList
 		self.reflector = reflector
 
@@ -67,5 +102,5 @@ class EngimaMachine():
 if __name__ == '__main__':
 	engimaMachine = EngimaMachine([], [], None)
 	
-	engimaMachine.processStringOfLetters('ABCa4D')
+	engimaMachine.processStringOfLetters('HELLOWORLD')
 

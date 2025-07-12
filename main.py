@@ -119,6 +119,7 @@ class EngimaMachine():
 		self.rotorList = rotorList
 		self.reflector = reflector
 
+
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def transformLetter(self, letter: str) -> str:
 		pass

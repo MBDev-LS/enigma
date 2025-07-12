@@ -2,12 +2,19 @@
 import string
 
 
+from utils import forceSingleCharInput
+
+
 class PlugboardConnection():
 	def __init__(self, letter0: str, letter1: str) -> None:
 		self.letter0 = letter0
 		self.letter1 = letter1
+	
+	
+	def __str__(self) -> str:
+		return f'<PlugboardConnection {self.letter0}-{self.letter1}>'
 
-
+	@forceSingleCharInput
 	def checkForLetter(self, letterToCheck: str) -> bool:
 		return letterToCheck == self.letter0 or letterToCheck == self.letter1
 	
@@ -17,15 +24,19 @@ class PlugboardConnection():
 
 
 class Plugboard():
-	def __init__(self, plugboardList: list[PlugboardConnection] | None=None) -> None:
-		self.plugboardList = plugboardList if plugboardList != None else []
+	def __init__(self, connectionsList: list[PlugboardConnection] | None=None) -> None:
+		self.connectionsList = connectionsList if connectionsList != None else []
 
-		if self.validatePlugboardList() != True:
-			raise Exception(f"Invalid plugboardList '{plugboardList}'. Must not contain two or more PlugboardConnections with the same letter.")
+		if self.validateconnectionsList() != True:
+			raise Exception(f"Invalid connectionsList '{connectionsList}'. Must not contain two or more PlugboardConnections with the same letter.")
+	
+
+	def __str__(self) -> str:
+		return f'<Plugboard [{", ".join([str(connection) for connection in self.connectionsList])}]>'
 
 	
-	def validatePlugboardList(self, targetPlugboardList: list[PlugboardConnection] | None=None) -> bool:
-		targetList = targetPlugboardList if targetPlugboardList != None else self.plugboardList
+	def validateconnectionsList(self, targetconnectionsList: list[PlugboardConnection] | None=None) -> bool:
+		targetList = targetconnectionsList if targetconnectionsList != None else self.connectionsList
 
 		lettersWithConnections = []
 		for plugboardConnection in targetList:
@@ -38,12 +49,30 @@ class Plugboard():
 		return True
 	
 
+	def getConnectionByLetter(self, letter: str) -> None:
+		pass
+	
+
 	def addConnection(self, newPlugboardConnection: PlugboardConnection) -> None:
-		proposedPlugboardList = self.plugboardList + [newPlugboardConnection]
-		if self.validatePlugboardList(proposedPlugboardList) != True:
+		proposedconnectionsList = self.connectionsList + [newPlugboardConnection]
+		if self.validateconnectionsList(proposedconnectionsList) != True:
 			raise Exception(f"Cannot add PlugboardConnections '{newPlugboardConnection}', contains letter already used in active connection.")
 		else:
-			self.plugboardList.append(newPlugboardConnection)
+			self.connectionsList.append(newPlugboardConnection)
+	
+	
+	def removeConnection(self, plugboardConnectionToRemove: PlugboardConnection) -> None:
+		numberOfConnectionInstancesInList = self.connectionsList.count(plugboardConnectionToRemove)
+		if numberOfConnectionInstancesInList  == 0:
+			raise ValueError(f"Tried to remove connection '{plugboardConnectionToRemove}', not in connectionsList '{self.connectionsList}'.")
+		elif numberOfConnectionInstancesInList > 1:
+			raise Exception(f"Failed to remove connection '{plugboardConnectionToRemove}' from connectionsList '{self.connectionsList}'. Too many instances of connection, must not be more than one.")
+		else:
+			self.connectionsList.remove(plugboardConnectionToRemove)
+	
+	def removeConnectionByLetter(self, letter: str) -> None:
+		pass
+	
 	
 
 
@@ -100,7 +129,18 @@ class EngimaMachine():
 
 
 if __name__ == '__main__':
-	engimaMachine = EngimaMachine([], [], None)
+	# engimaMachine = EngimaMachine([], [], None)
 	
-	engimaMachine.processStringOfLetters('HELLOWORLD')
+	# engimaMachine.processStringOfLetters('HELLOWORLD')
+
+	plugboard = Plugboard([PlugboardConnection('A', 'D')])
+	connection0 = PlugboardConnection('A', 'E')
+	connection0.checkForLetter(4, letterToCheck='B')
+
+	# print(plugboard, connection0)
+
+	# plugboard.addConnection(connection0)
+
+	# print(plugboard)
+
 

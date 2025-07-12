@@ -20,7 +20,7 @@ class PlugboardConnection():
 		return letterToCheck == self.letter0 or letterToCheck == self.letter1
 	
 
-	def getListOfLetters(self) -> tuple:
+	def getLettersInTuple(self) -> tuple:
 		return (self.letter0, self.letter1)
 
 
@@ -51,8 +51,12 @@ class Plugboard():
 	
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
-	def getConnectionByLetter(self, letter: str) -> None:
-		pass
+	def getConnectionByLetter(self, targetLetter: str) -> PlugboardConnection | None:
+		for currentConnection in self.connectionsList:
+			if currentConnection.checkForLetter(targetLetter) == True:
+				return currentConnection
+		
+		return None
 	
 
 	def addConnection(self, newPlugboardConnection: PlugboardConnection) -> None:
@@ -72,11 +76,24 @@ class Plugboard():
 		else:
 			self.connectionsList.remove(plugboardConnectionToRemove)
 	
+
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
-	def removeConnectionByLetter(self, letter: str) -> None:
-		pass
-	
-	
+	def removeConnectionByLetter(self, targetLetter: str) -> bool:
+		"""
+		Removes connection involving
+		targetLetter if it exists.
+
+		Returns True if connection is
+		found and removed, otherwise
+		returns False.
+		"""
+
+		connectionToDelete = self.getConnectionByLetter(targetLetter)
+		if connectionToDelete != None:
+			self.removeConnection(connectionToDelete)
+			return True
+		
+		return False
 
 
 

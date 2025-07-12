@@ -107,8 +107,13 @@ class Rotor():
 		self.turnoverPosition = turnoverPosition
 		self.currentPosition = startingPosition
 	
-	def turnRotor(self):
+	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
+
+		turnoverTriggered = self.currentPosition == self.turnoverPosition
+		return turnoverTriggered
+	
+
 
 
 
@@ -123,6 +128,18 @@ class EngimaMachine():
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def transformLetter(self, letter: str) -> str:
 		pass
+
+	"""
+	- Turn rotors
+		- Turn rotor, check for turnover triger
+		- If there is another rotor loaded, set to current and repeat from last step
+	- Check switchboard for switch and perform if neccessary
+	- Send switchboard result through rotors (and reflector)
+		- Map letter via current rotor
+		- Check for next rotor, if found, repeat. If not, passthrough reflectors and repeat mappings IN REVERSE
+	- Check switchboard withj result and switch if neccessaary
+	- Return transformed letter
+	"""
 
 
 	@forceOnlyLetterStringsArgs()

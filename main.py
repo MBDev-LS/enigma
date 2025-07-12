@@ -107,13 +107,30 @@ class Plugboard():
 		return False
 
 
-
-class Rotor():
-	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are, so deal with it.
-
-	def __init__(self, name: str, outputMappingSequenceString: str, ringSettingOffset: int, turnoverPosition: int, startingPosition: int) -> None:
+class MappingComponent():
+	def __init__(self, name: str, outputMappingSequenceString: str, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
 		self.name = name
+		self.inputMappingSequenceString = inputMappingSequenceString
 		self.outputMappingSequenceString = outputMappingSequenceString
+	
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
+	def mapLetter(self, letterToMap: str, reverseMap: bool=False) -> str:
+		if reverseMap == False:
+			alphabeticalIndexOfLetter = string.ascii_uppercase.index(letterToMap) # Or ord(letterToMap) - 65, take your pick.
+
+			return self.outputMappingSequenceString[alphabeticalIndexOfLetter]
+		else:
+			letterIndexInOutputMapping = self.outputMappingSequenceString.index(letterToMap)
+
+			return self.inputMappingSequenceString[letterIndexInOutputMapping]
+
+
+class Rotor(MappingComponent):
+	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
+
+	def __init__(self, name: str, outputMappingSequenceString: str, ringSettingOffset: int, turnoverPosition: int, startingPosition: int, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
+		super().__init__(name, outputMappingSequenceString, inputMappingSequenceString)
+
 		self.ringSettingOffset = ringSettingOffset
 		self.turnoverPosition = turnoverPosition
 		self.currentPosition = startingPosition
@@ -125,17 +142,8 @@ class Rotor():
 		return turnoverTriggered
 
 
-class Reflector():
-	# Right, so the more observant among you may
-	# notice that all of the Reflector class' code is
-	# shared with Rotor class. That means that Rotor
-	# Could have inheritted from Reflector instead of
-	# having this code twice. This change would take
-	# about a minute to make. But I haven't, because
-	# I don't feel like it. It just doesn't feel right.
-	def __init__(self) -> None:
-		self.name = name
-		self.outputMappingSequenceString = outputMappingSequenceString
+class Reflector(MappingComponent):
+	pass
 
 
 class EngimaMachine():

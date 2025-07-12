@@ -2,10 +2,11 @@
 import string
 
 
-from utils import forceSingleCharInput
+from utils import forceOnlyLetterStringsArgs
 
 
 class PlugboardConnection():
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def __init__(self, letter0: str, letter1: str) -> None:
 		self.letter0 = letter0
 		self.letter1 = letter1
@@ -14,7 +15,7 @@ class PlugboardConnection():
 	def __str__(self) -> str:
 		return f'<PlugboardConnection {self.letter0}-{self.letter1}>'
 
-	@forceSingleCharInput
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def checkForLetter(self, letterToCheck: str) -> bool:
 		return letterToCheck == self.letter0 or letterToCheck == self.letter1
 	
@@ -49,6 +50,7 @@ class Plugboard():
 		return True
 	
 
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def getConnectionByLetter(self, letter: str) -> None:
 		pass
 	
@@ -70,6 +72,7 @@ class Plugboard():
 		else:
 			self.connectionsList.remove(plugboardConnectionToRemove)
 	
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def removeConnectionByLetter(self, letter: str) -> None:
 		pass
 	
@@ -99,25 +102,14 @@ class EngimaMachine():
 		self.rotorList = rotorList
 		self.reflector = reflector
 
-
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def transformLetter(self, letter: str) -> str:
 		pass
 
 
-	def __checkInputStringIsValid(self, inputString: str) -> bool:
-		for char in inputString:
-			if char not in string.ascii_uppercase:
-				return False
-		
-		return True
-
-
+	@forceOnlyLetterStringsArgs()
 	def processStringOfLetters(self, inputString: str) -> str:
 		uppercaseInputString = inputString.upper()
-		inputStringIsValid = self.__checkInputStringIsValid(uppercaseInputString)
-
-		if inputStringIsValid != True:
-			raise Exception(f"Invalid inputString '{inputString}'. Must be string containing ONLY letters in the Latin/Roman alphabet.")
 
 		transformedOutputString = ''
 
@@ -135,7 +127,7 @@ if __name__ == '__main__':
 
 	plugboard = Plugboard([PlugboardConnection('A', 'D')])
 	connection0 = PlugboardConnection('A', 'E')
-	connection0.checkForLetter(4, letterToCheck='B')
+	connection0.checkForLetter('B')
 
 	# print(plugboard, connection0)
 

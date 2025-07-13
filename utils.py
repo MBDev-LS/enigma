@@ -2,7 +2,6 @@
 import string
 
 
-
 def forceOnlyLetterStringsArgs(limitLengthToOne: bool=False):
 	"""
 	Forces all string arguments to
@@ -30,5 +29,3 @@ def forceOnlyLetterStringsArgs(limitLengthToOne: bool=False):
 		
 		return wrapper
 	return inner_forceCharOnlyInput
-
-

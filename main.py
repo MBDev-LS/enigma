@@ -140,6 +140,19 @@ class Rotor(MappingComponent):
 
 		turnoverTriggered = self.currentPosition == self.turnoverPosition
 		return turnoverTriggered
+	
+
+	# Overwrites inhereted method of the same name.
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
+	def mapLetter(self, letterToMap: str, reverseMap: bool=False) -> str:
+		if reverseMap == False:
+			alphabeticalIndexOfLetter = (self.currentPosition + string.ascii_uppercase.index(letterToMap)) % 26 # Or ord(letterToMap) - 65, take your pick.
+
+			return self.outputMappingSequenceString[alphabeticalIndexOfLetter]
+		else:
+			letterIndexInOutputMapping = (self.currentPosition + self.outputMappingSequenceString.index(letterToMap)) % 26
+
+			return self.inputMappingSequenceString[letterIndexInOutputMapping]
 
 
 class Reflector(MappingComponent):
@@ -224,6 +237,6 @@ if __name__ == '__main__':
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
 	
 	
-	output = engimaMachine.processStringOfLetters('YQHHZ')
+	output = engimaMachine.processStringOfLetters('A')
 
 	print(output)

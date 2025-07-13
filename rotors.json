@@ -1,0 +1,27 @@
+[
+	{
+		"name": "I",
+		"output_mapping": "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
+		"turnover_notch_position": "Q"
+	},
+	{
+		"name": "II",
+		"output_mapping": "AJDKSIRUXBLHWTMCQGZNPYFVOE",
+		"turnover_notch_position": "E"
+	},
+	{
+		"name": "II",
+		"output_mapping": "BDFHJLCPRTXVZNYEIWGAKMUSQO",
+		"turnover_notch_position": "V"
+	},
+	{
+		"name": "VI",
+		"output_mapping": "ESOVPZJAYQUIRHXLNFTGKDCMWB",
+		"turnover_notch_position": "J"
+	},
+	{
+		"name": "V",
+		"output_mapping": "VZBRGITYUPSDNHLXAWMJQOFECK",
+		"turnover_notch_position": "Z"
+	}
+]

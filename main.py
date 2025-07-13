@@ -147,7 +147,7 @@ class Reflector(MappingComponent):
 
 
 class EngimaMachine():
-	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector) -> None:
+	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector: Reflector) -> None:
 		self.plugboard = plugboard
 		self.rotorList = rotorList
 		self.reflector = reflector
@@ -176,33 +176,25 @@ class EngimaMachine():
 	
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def processLetterInRotors(self, letterToSwitch: str, reverseOrder: bool=False) -> str:
-		pass
+		currentLetter = letterToSwitch
 
+		for currentRotor in self.rotorList:
+			currentLetter = currentRotor.mapLetter(currentLetter, reverseOrder)
+		
+		return currentLetter
 
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def transformLetter(self, letter: str) -> str:
 
 		self.turnRotors()
-		letterFromPlugboard = self.processLetterInPlugboard(letter)
-		letterFromRotors = ''
+		letterFromPlugboard0 = self.processLetterInPlugboard(letter)
+		letterFromRotors0 = self.processLetterInRotors(letterFromPlugboard0)
+		reflectedLetter = self.reflector.mapLetter(letterFromRotors0)
+		letterFromRotors1 = self.processLetterInRotors(reflectedLetter)
+		letterFromPlugboard1 = self.processLetterInPlugboard(letterFromRotors1)
 
-
-
-
-		"""
-		- Turn rotors
-			- Turn rotor, check for turnover triger
-			- If there is another rotor loaded, set to current and repeat from last step
-		- Check switchboard for switch and perform if neccessary
-
-		- Send switchboard result through rotors (and reflector)
-			- Map letter via current rotor
-			- Check for next rotor, if found, repeat. If not, passthrough reflectors and repeat mappings IN REVERSE
-		
-		- Check switchboard withj result and switch if neccessaary
-		- Return transformed letter
-		"""
+		return letterFromPlugboard1
 
 
 	@forceOnlyLetterStringsArgs()
@@ -233,23 +225,3 @@ if __name__ == '__main__':
 
 	# print(plugboard)
 
-"""
-# GERMAN ARMY WW2 ROTORS
-Rotor # 	ABCDEFGHIJKLMNOPQRSTUVWXYZ		Date Introduced 	Model Name & Number
-I 			EKMFLGDQVZNTOWYHXUSPAIBRCJ		1930 				Enigma I
-II 			AJDKSIRUXBLHWTMCQGZNPYFVOE		1930 				Enigma I
-III 		BDFHJLCPRTXVZNYEIWGAKMUSQO		1930 				Enigma I
-IV 			ESOVPZJAYQUIRHXLNFTGKDCMWB		December 1938 		M3 Army
-V 			VZBRGITYUPSDNHLXAWMJQOFECK		December 1938 		M3 Army 
-
-
-TURNOVER NOTCH POSITIONS
-Rotor 		Notch 		Effect
-I 			Q 			If rotor steps from Q to R, the next rotor is advanced
-II 			E 			If rotor steps from E to F, the next rotor is advanced
-III 		V 			If rotor steps from V to W, the next rotor is advanced
-IV 			J 			If rotor steps from J to K, the next rotor is advanced
-V 			Z 			If rotor steps from Z to A, the next rotor is advanced 
-
-Note: Turnover position numbers should be the number for the letter AFTER the one in the notch column.
-"""

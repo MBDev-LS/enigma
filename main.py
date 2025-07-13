@@ -191,7 +191,7 @@ class EngimaMachine():
 		letterFromPlugboard0 = self.processLetterInPlugboard(letter)
 		letterFromRotors0 = self.processLetterInRotors(letterFromPlugboard0)
 		reflectedLetter = self.reflector.mapLetter(letterFromRotors0)
-		letterFromRotors1 = self.processLetterInRotors(reflectedLetter)
+		letterFromRotors1 = self.processLetterInRotors(reflectedLetter, reverseOrder=True)
 		letterFromPlugboard1 = self.processLetterInPlugboard(letterFromRotors1)
 
 		return letterFromPlugboard1
@@ -211,17 +211,19 @@ class EngimaMachine():
 
 
 if __name__ == '__main__':
-	# engimaMachine = EngimaMachine([], [], None)
+	plugboard = Plugboard([])
+
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 0, 17, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 0, 5, 0)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 0, 22, 0)
+
+	rotorList = [rotor1, rotor2, rotor3]
+
+	reflector = Reflector('Beta', 'LEYJVCNIXWPBQMDRTAKZGFUHOS')
+
+	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
 	
-	# engimaMachine.processStringOfLetters('HELLOWORLD')
+	
+	output = engimaMachine.processStringOfLetters('YQHHZ')
 
-	plugboard = Plugboard([PlugboardConnection('A', 'D')])
-	connection0 = PlugboardConnection('A', 'E')
-	connection0.checkForLetter('B')
-
-	# print(plugboard, connection0)
-
-	# plugboard.addConnection(connection0)
-
-	# print(plugboard)
-
+	print(output)

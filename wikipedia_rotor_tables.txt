@@ -19,6 +19,7 @@ V 			Z 			If rotor steps from Z to A, the next rotor is advanced
 Note: Turnover position numbers should be the number for the letter AFTER the one in the notch column.
 
 
+Reflector A 	EJMZALYXVBWFCRQUONTSPIKHGD
 
 From: https://en.wikipedia.org/wiki/Enigma_rotor_details
 This version: https://en.wikipedia.org/w/index.php?title=Enigma_rotor_details&oldid=1275803743

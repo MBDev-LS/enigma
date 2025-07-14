@@ -113,17 +113,16 @@ class MappingComponent():
 		self.inputMappingSequenceString = inputMappingSequenceString
 		self.outputMappingSequenceString = outputMappingSequenceString
 	
-	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
-	def mapLetter(self, letterToMap: str, reverseMap: bool=False) -> str:
+	# @forceOnlyLetterStringsArgs(limitLengthToOne=True) # ISSUE WITH INPUT MAPPING, FIX
+	def mapLetter(self, letterToMap: str, inputMapping: str=string.ascii_uppercase, reverseMap: bool=False) -> tuple[str, str]:
 		if reverseMap == False:
-			alphabeticalIndexOfLetter = string.ascii_uppercase.index(letterToMap) # Or ord(letterToMap) - 65, take your pick.
+			alphabeticalIndexOfLetter = inputMapping.index(letterToMap) % 26
 
-			return self.outputMappingSequenceString[alphabeticalIndexOfLetter]
+			return self.outputMappingSequenceString[alphabeticalIndexOfLetter], self.outputMappingSequenceString
 		else:
-			letterIndexInOutputMapping = self.outputMappingSequenceString.index(letterToMap)
+			letterIndexInOutputMapping = self.outputMappingSequenceString.index(letterToMap) % 26
 
-			return self.inputMappingSequenceString[letterIndexInOutputMapping]
-
+			return self.inputMappingSequenceString[letterIndexInOutputMapping], self.outputMappingSequenceString
 
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
@@ -143,16 +142,16 @@ class Rotor(MappingComponent):
 	
 
 	# Overwrites inhereted method of the same name.
-	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
-	def mapLetter(self, letterToMap: str, reverseMap: bool=False) -> str:
+	# @forceOnlyLetterStringsArgs(limitLengthToOne=True) # gonna cause issues, FIX THIS LATER
+	def mapLetter(self, letterToMap: str, inputMapping: str=string.ascii_uppercase, reverseMap: bool=False) -> str:
 		if reverseMap == False:
-			alphabeticalIndexOfLetter = (self.currentPosition + string.ascii_uppercase.index(letterToMap)) % 26 # Or ord(letterToMap) - 65, take your pick.
+			alphabeticalIndexOfLetter = (self.currentPosition + inputMapping.index(letterToMap)) % 26
 
 			return self.outputMappingSequenceString[alphabeticalIndexOfLetter]
 		else:
-			letterIndexInOutputMapping = (self.currentPosition + self.outputMappingSequenceString.index(letterToMap)) % 26
+			letterIndexInOutputMapping = (self.currentPosition + inputMapping.index(letterToMap)) % 26
 
-			return self.inputMappingSequenceString[letterIndexInOutputMapping]
+			return self.outputMappingSequenceString[letterIndexInOutputMapping]
 
 
 class Reflector(MappingComponent):
@@ -187,14 +186,23 @@ class EngimaMachine():
 			return letterToProcess
 	
 	
-	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
-	def processLetterInRotors(self, letterToSwitch: str, reverseOrder: bool=False) -> str:
+	# @forceOnlyLetterStringsArgs(limitLengthToOne=True)
+	def processLetterInRotors(self, letterToSwitch: str, reverseOrder: bool=False, inputMapping=string.ascii_uppercase) -> tuple[str, str]:
 		currentLetter = letterToSwitch
 
-		for currentRotor in self.rotorList:
-			currentLetter = currentRotor.mapLetter(currentLetter, reverseOrder)
+		previousOutputMapping = inputMapping
+
+		startingRotorIndex = 0 if reverseOrder != True else len(self.rotorList) - 1
+		endingRotorIndex =  len(self.rotorList) if reverseOrder != True else -1
+		changeInIndex =  1 if reverseOrder != True else -1 
+
+		for currentRotorIndex in range(startingRotorIndex, endingRotorIndex, changeInIndex):
+			oldLetter = currentLetter
+			currentLetter = self.rotorList[currentRotorIndex].mapLetter(currentLetter, previousOutputMapping, reverseOrder)
+			previousOutputMapping = self.rotorList[currentRotorIndex].outputMappingSequenceString
+			print(f'Rotor: {self.rotorList[currentRotorIndex].name}, Input: {oldLetter}, Output: {currentLetter}')
 		
-		return currentLetter
+		return currentLetter, previousOutputMapping
 
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
@@ -202,9 +210,10 @@ class EngimaMachine():
 
 		self.turnRotors()
 		letterFromPlugboard0 = self.processLetterInPlugboard(letter)
-		letterFromRotors0 = self.processLetterInRotors(letterFromPlugboard0)
-		reflectedLetter = self.reflector.mapLetter(letterFromRotors0)
-		letterFromRotors1 = self.processLetterInRotors(reflectedLetter, reverseOrder=True)
+		letterFromRotors0, lastRotorOutputMapping = self.processLetterInRotors(letterFromPlugboard0)
+		reflectedLetter, reflectorOutputMapping = self.reflector.mapLetter(letterFromRotors0, lastRotorOutputMapping)
+		print('Reflected letter:', reflectedLetter)
+		letterFromRotors1, lastRotorOutputMapping = self.processLetterInRotors(reflectedLetter, reverseOrder=True, inputMapping=reflectorOutputMapping)
 		letterFromPlugboard1 = self.processLetterInPlugboard(letterFromRotors1)
 
 		return letterFromPlugboard1
@@ -237,6 +246,6 @@ if __name__ == '__main__':
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
 	
 	
-	output = engimaMachine.processStringOfLetters('A')
+	output = engimaMachine.processStringOfLetters('C')
 
 	print(output)

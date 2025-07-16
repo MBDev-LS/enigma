@@ -245,38 +245,6 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
-	output = engimaMachine.processStringOfLetters('A')
+	output = engimaMachine.processStringOfLetters('ABCD')
 	print(output)
-
-
-
-	# outputList = []
-	# for letter in string.ascii_uppercase:
-	# 	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 0, 17, 0)
-	# 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 0, 5, 0)
-	# 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 0, 22, 0)
-
-	# 	rotorList = [rotor1, rotor2, rotor3]
-
-	# 	reflector = Reflector('Beta', 'EJMZALYXVBWFCRQUONTSPIKHGD')
-	# 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
-	# 	t0 = engimaMachine.processStringOfLetters(letter)
-
-
-
-	# 	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 0, 17, 0)
-	# 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 0, 5, 0)
-	# 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 0, 22, 0)
-
-	# 	rotorList = [rotor1, rotor2, rotor3]
-
-	# 	reflector = Reflector('Beta', 'EJMZALYXVBWFCRQUONTSPIKHGD')
-	# 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
-	# 	t1 = engimaMachine.processStringOfLetters(t0)
-	# 	outputList.append((letter, t1))
-	
-	# for item in outputList:
-	# 	print(item)
-
-
 

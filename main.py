@@ -147,11 +147,11 @@ class Rotor(MappingComponent):
 		if reverseMap == False:
 			mappedLetter = self.rightMappingSequence[(signalToMap + self.currentPosition) % 26]
 
-			return self.leftMappingSequence.find(mappedLetter)
+			return (self.leftMappingSequence.find(mappedLetter) - self.currentPosition) % 26
 		else:
 			mappedLetter = self.leftMappingSequence[(signalToMap + self.currentPosition) % 26]
 
-			return self.rightMappingSequence.find(mappedLetter)
+			return (self.rightMappingSequence.find(mappedLetter) - self.currentPosition) % 26
 
 
 class Reflector(MappingComponent):
@@ -197,7 +197,7 @@ class EngimaMachine():
 		for currentRotorIndex in range(startingRotorIndex, endingRotorIndex, changeInIndex):
 			oldLetter = currentSignal
 			currentSignal = self.rotorList[currentRotorIndex].mapLetter(currentSignal, reverseOrder)
-			print(f'Rotor: {self.rotorList[currentRotorIndex].name}, Input: {oldLetter}, Output: {currentSignal}')
+			print(f'Rotor: {self.rotorList[currentRotorIndex].name}, Input: {string.ascii_uppercase[oldLetter]}, Output: {string.ascii_uppercase[currentSignal]}')
 		
 		return currentSignal
 
@@ -211,7 +211,7 @@ class EngimaMachine():
 		signalFromPlugboard = string.ascii_uppercase.find(letterFromPlugboard0)
 		letterSignalFromRotors0 = self.processLetterSignalInRotors(signalFromPlugboard)
 		reflectedLetter = self.reflector.mapLetter(letterSignalFromRotors0)
-		print('Reflected letter:', reflectedLetter)
+		print('Reflected letter:', string.ascii_uppercase[reflectedLetter])
 		letterSignalFromRotors1 = self.processLetterSignalInRotors(reflectedLetter, reverseOrder=True)
 		letterFromRotorProcess = string.ascii_uppercase[letterSignalFromRotors1]
 
@@ -245,18 +245,9 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
 	output = engimaMachine.processStringOfLetters('A')
 	print(output)
 
-
-
-
-
-
-
-	
-	
 
 
 	# outputList = []

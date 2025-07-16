@@ -26,3 +26,12 @@ Reflector A 	EJMZALYXVBWFCRQUONTSPIKHGD
 
 From: https://en.wikipedia.org/wiki/Enigma_rotor_details
 This version: https://en.wikipedia.org/w/index.php?title=Enigma_rotor_details&oldid=1275803743
+
+1-44, 65-
+
+
+1-63, 84-127, 142-186
+63, 84-126
+
+NEXT: 
+127, 142-183

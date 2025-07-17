@@ -1,27 +1,27 @@
 [
 	{
 		"name": "I",
-		"output_mapping": "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
+		"mapping_string": "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
 		"turnover_notch_position": "Q"
 	},
 	{
 		"name": "II",
-		"output_mapping": "AJDKSIRUXBLHWTMCQGZNPYFVOE",
+		"mapping_string": "AJDKSIRUXBLHWTMCQGZNPYFVOE",
 		"turnover_notch_position": "E"
 	},
 	{
 		"name": "II",
-		"output_mapping": "BDFHJLCPRTXVZNYEIWGAKMUSQO",
+		"mapping_string": "BDFHJLCPRTXVZNYEIWGAKMUSQO",
 		"turnover_notch_position": "V"
 	},
 	{
 		"name": "VI",
-		"output_mapping": "ESOVPZJAYQUIRHXLNFTGKDCMWB",
+		"mapping_string": "ESOVPZJAYQUIRHXLNFTGKDCMWB",
 		"turnover_notch_position": "J"
 	},
 	{
 		"name": "V",
-		"output_mapping": "VZBRGITYUPSDNHLXAWMJQOFECK",
+		"mapping_string": "VZBRGITYUPSDNHLXAWMJQOFECK",
 		"turnover_notch_position": "Z"
 	}
 ]

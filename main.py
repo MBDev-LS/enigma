@@ -127,7 +127,7 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	def __init__(self, name: str, outputMappingSequenceString: str, ringSettingOffset: int, turnoverPosition: int, startingPosition: int, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
+	def __init__(self, name: str, outputMappingSequenceString: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
 		super().__init__(name, outputMappingSequenceString, inputMappingSequenceString)
 
 		self.ringSettingOffset = ringSettingOffset
@@ -237,9 +237,9 @@ class EngimaMachine():
 if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 0, 17, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 0, 5, 0)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 0, 22, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 0, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
 

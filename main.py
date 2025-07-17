@@ -1,8 +1,13 @@
 
 import string
-
+import json
 
 from utils import forceOnlyLetterStringsArgs
+
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent
+
+
 
 
 class PlugboardConnection():
@@ -108,9 +113,9 @@ class Plugboard():
 
 
 class MappingComponent():
-	def __init__(self, name: str, rightMappingSequence: str, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
+	def __init__(self, name: str, rightMappingSequence: str, leftMappingSequence: str=string.ascii_uppercase) -> None:
 		self.name = name
-		self.leftMappingSequence = inputMappingSequenceString
+		self.leftMappingSequence = leftMappingSequence
 		self.rightMappingSequence = rightMappingSequence
 	
 	# @forceOnlyLetterStringsArgs(limitLengthToOne=True) # ISSUE WITH INPUT MAPPING, FIX
@@ -127,13 +132,49 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	def __init__(self, name: str, outputMappingSequenceString: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, inputMappingSequenceString: str=string.ascii_uppercase) -> None:
-		super().__init__(name, outputMappingSequenceString, inputMappingSequenceString)
+	def __init__(self, name: str, rightMappingSequence: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase) -> None:
+		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
 		self.turnoverPosition = turnoverPosition
 		self.currentPosition = startingPosition
 	
+
+	@classmethod
+	def loadRotorListFromJson(cls, jsonFilePath: str | Path, ringSettingOffsets: list[int], startingPositions: list[int], leftMappingSequences: list[str] | None=None) -> list:
+		with open(jsonFilePath, 'r') as jsonRotorFile:
+			rotorDictsList = json.loads(jsonRotorFile.read())
+
+		leftMappingSequences = leftMappingSequences if leftMappingSequences != None else [string.ascii_uppercase] * len(rotorDictsList)
+
+		if len(rotorDictsList) != len(ringSettingOffsets):
+			errorDescriptor = 'few' if len(ringSettingOffsets) < len(ringSettingOffsets) else 'many'
+
+			raise IndexError(f"Failed to load rotors from JSON, too {errorDescriptor} ring setting offsets provided in ringSettingOffsets tuple '{ringSettingOffsets}'. ({len(ringSettingOffsets)} provided for {len(rotorDictsList)} rotors.)")
+		elif len(rotorDictsList) != len(startingPositions):
+			errorDescriptor = 'few' if len(startingPositions) < len(rotorDictsList) else 'many'
+
+			raise IndexError(f"Failed to load rotors from JSON, too {errorDescriptor} starting positions provided in startingPositions tuple '{startingPositions}'. ({len(startingPositions)} provided for {len(rotorDictsList)} rotors.)")
+		elif len(rotorDictsList) != len(leftMappingSequences):
+			errorDescriptor = 'few' if len(leftMappingSequences) < len(rotorDictsList) else 'many'
+
+			raise IndexError(f"Failed to load rotors from JSON, too {errorDescriptor} left mapping sequences provided in leftMappingSequences tuple '{leftMappingSequences}'. ({len(leftMappingSequences)} provided for {len(rotorDictsList)} rotors.)")
+		
+		outputRotorList = []
+
+		for rotorIndex, rotorDict in enumerate(rotorDictsList):
+			turnoverIntegerPosition = rotorDict['mapping_string'].find(rotorDict['turnover_notch_position'])
+
+			newRotor = cls(rotorDict['name'], rotorDict['mapping_string'], turnoverIntegerPosition, ringSettingOffsets[rotorIndex], startingPositions[rotorIndex], leftMappingSequences[rotorIndex])
+
+			outputRotorList.append(newRotor)
+		
+		return outputRotorList
+
+
+
+	
+
 	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
 
@@ -252,10 +293,12 @@ if __name__ == '__main__':
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
 
-	rotorList = [rotor1, rotor2, rotor3]
+	# rotorList = [rotor1, rotor2, rotor3]
+
+	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('LZFBD PTLNB SHLHMM VGPTIC')
+	output = engimaMachine.processStringOfLetters('MKNIQ GLDFK')
 	print(output)
 

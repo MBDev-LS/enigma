@@ -159,10 +159,13 @@ class Reflector(MappingComponent):
 
 
 class EngimaMachine():
-	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector: Reflector) -> None:
+	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector: Reflector, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ') -> None:
 		self.plugboard = plugboard
 		self.rotorList = rotorList
 		self.reflector = reflector
+		
+		self.outputOnlyUppercase = outputOnlyUppercase
+		self.spaceOutputCharacter = spaceOutputCharacter
 
 
 	def turnRotors(self) -> None:
@@ -221,14 +224,22 @@ class EngimaMachine():
 		return letterFromPlugboard1
 
 
-	@forceOnlyLetterStringsArgs()
+	@forceOnlyLetterStringsArgs(allowLowerCase=True, allowSpaceCharacter=True)
 	def processStringOfLetters(self, inputString: str) -> str:
-		uppercaseInputString = inputString.upper()
 
 		transformedOutputString = ''
 
-		for currentLetter in uppercaseInputString:
-			transformedOutputString += self.transformLetter(currentLetter)
+		for currentCharacter in inputString:
+			
+			if currentCharacter != ' ':
+				transformedLetter = self.transformLetter(currentCharacter.upper())
+			else:
+				transformedLetter = self.spaceOutputCharacter
+
+			if self.outputOnlyUppercase == False and currentCharacter in string.ascii_lowercase:
+				transformedLetter = transformedLetter.lower()
+
+			transformedOutputString += transformedLetter
 		
 		return transformedOutputString
 
@@ -244,7 +255,7 @@ if __name__ == '__main__':
 	rotorList = [rotor1, rotor2, rotor3]
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector)
-	output = engimaMachine.processStringOfLetters('ABCD')
+	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
+	output = engimaMachine.processStringOfLetters('LZFBD PTLNB SHLHMM VGPTIC')
 	print(output)
 

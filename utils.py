@@ -2,7 +2,7 @@
 import string
 
 
-def forceOnlyLetterStringsArgs(limitLengthToOne: bool=False):
+def forceOnlyLetterStringsArgs(limitLengthToOne: bool=False, allowLowerCase: bool=False, allowSpaceCharacter: bool=False):
 	"""
 	Forces all string arguments to
 	contain only strings
@@ -19,7 +19,7 @@ def forceOnlyLetterStringsArgs(limitLengthToOne: bool=False):
 						raise ValueError(f'String must have a length no greater than 1.')
 					else:
 						for char in currentArgument:
-							if char not in string.ascii_uppercase:
+							if char not in string.ascii_uppercase and (char not in string.ascii_lowercase and allowLowerCase == True) and (char != ' ' and allowSpaceCharacter == True):
 								raise ValueError(f'String must contain ONLY letters in the Latin/Roman alphabet, not \'{argumentsToCheck[0]}\'.')
 					
 

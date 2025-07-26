@@ -218,7 +218,7 @@ class EngimaMachine():
 		turnNextRotor = True
 
 		while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
-			print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
+			# print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
 			turnNextRotor = self.rotorList[currentRotorIndex].turnRotor()
 			currentRotorIndex += 1
 
@@ -308,15 +308,17 @@ if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
 	# The turnover values are 0-indexed
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 16, 19, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 18, 0, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 20, 0, 0)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
 
 	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
-	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD')
+	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
+	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
+	output = engimaMachine.processStringOfLetters('TEST THE BEST BEST THE TEST OF THE BEST ICE CREAM AROUND THE WORLD TODAY INCLUDING NEW ZEALAND AND THE LAND AROUND THE MOUTH OF THE ARCTIC SEA')
 	print(output)
+	n=5
+	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))

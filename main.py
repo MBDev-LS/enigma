@@ -136,8 +136,8 @@ class Rotor(MappingComponent):
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
-		self.turnoverPosition = turnoverPosition
-		self.currentPosition = startingPosition
+		self.turnoverPosition = turnoverPosition - ringSettingOffset
+		self.currentPosition = startingPosition - ringSettingOffset
 	
 
 	@classmethod
@@ -171,9 +171,6 @@ class Rotor(MappingComponent):
 		
 		return outputRotorList
 
-
-
-	
 
 	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
@@ -270,7 +267,14 @@ class EngimaMachine():
 
 		transformedOutputString = ''
 
+		debugIndex = 0
 		for currentCharacter in inputString:
+			print()
+			print('####### ' + inputString + ' #######')
+			print('        ' + ' '*debugIndex + '^')
+			print()
+
+			debugIndex += 1
 			
 			if currentCharacter != ' ':
 				transformedLetter = self.transformLetter(currentCharacter.upper())
@@ -289,15 +293,15 @@ class EngimaMachine():
 if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 10, 0)
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
 
-	# rotorList = [rotor1, rotor2, rotor3]
+	rotorList = [rotor1, rotor2, rotor3]
 
-	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
+	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('MKNIQ GLDFK')
+	output = engimaMachine.processStringOfLetters('BOSH LA BOSH LA BOSH LA BREAD')
 	print(output)

@@ -212,6 +212,8 @@ class EngimaMachine():
 		if len(self.rotorList) == 0:
 			raise Exception('Failed to turn rotors as none are loaded into enigma machine.')
 		
+		oldRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
+
 		currentRotorIndex = 0 
 		turnNextRotor = True
 
@@ -219,6 +221,11 @@ class EngimaMachine():
 			print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
 			turnNextRotor = self.rotorList[currentRotorIndex].turnRotor()
 			currentRotorIndex += 1
+
+		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
+
+		print(f'Turned wheel from {oldRotorPositons[::-1]} to {newRotorPositons[::-1]}')
+		print()
 	
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
@@ -279,6 +286,8 @@ class EngimaMachine():
 			print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
 			print()
 
+			
+
 			debugIndex += 1
 			
 			if currentCharacter != ' ':
@@ -298,9 +307,10 @@ class EngimaMachine():
 if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 19, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
+	# The turnover values are 0-indexed
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 16, 19, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
 

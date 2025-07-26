@@ -136,8 +136,10 @@ class Rotor(MappingComponent):
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
-		self.turnoverPosition = turnoverPosition - ringSettingOffset
-		self.currentPosition = startingPosition - ringSettingOffset
+		# self.turnoverPosition = turnoverPosition
+		# self.currentPosition = startingPosition
+		self.turnoverPosition = (turnoverPosition - ringSettingOffset) % 26
+		self.currentPosition = (startingPosition - ringSettingOffset) % 26
 	
 
 	@classmethod
@@ -214,6 +216,7 @@ class EngimaMachine():
 		turnNextRotor = True
 
 		while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
+			print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
 			turnNextRotor = self.rotorList[currentRotorIndex].turnRotor()
 			currentRotorIndex += 1
 	
@@ -270,8 +273,10 @@ class EngimaMachine():
 		debugIndex = 0
 		for currentCharacter in inputString:
 			print()
+			print()
 			print('####### ' + inputString + ' #######')
 			print('        ' + ' '*debugIndex + '^')
+			print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
 			print()
 
 			debugIndex += 1
@@ -293,7 +298,7 @@ class EngimaMachine():
 if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 10, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 19, 0)
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
 
@@ -303,5 +308,5 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('BOSH LA BOSH LA BOSH LA BREAD')
+	output = engimaMachine.processStringOfLetters('BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD BOSH LA BOSH LA BOSH LA BREAD')
 	print(output)

@@ -293,11 +293,11 @@ if __name__ == '__main__':
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
 
-	# rotorList = [rotor1, rotor2, rotor3]
+	rotorList = [rotor1, rotor2, rotor3]
 
-	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
+	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
 	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('MKNIQ GLDFK')
+	output = engimaMachine.processStringOfLetters('HELLO WORLD')
 	print(output)

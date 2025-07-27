@@ -11,7 +11,7 @@ Beta		LEYJVCNIXWPBQMDRTAKZGFUHOS
 
 ReflectA 	EJMZALYXVBWFCRQUONTSPIKHGD
 
-TURNOVER NOTCH POSITIONS
+TURNOVER NOTCH POSITIONS - THESE MAY BE WRONG
 Rotor 		Notch 		Effect
 I 			Q 			If rotor steps from Q to R, the next rotor is advanced
 II 			E 			If rotor steps from E to F, the next rotor is advanced

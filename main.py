@@ -132,7 +132,7 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	def __init__(self, name: str, rightMappingSequence: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase) -> None:
+	def __init__(self, name: str, rightMappingSequence: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
@@ -140,6 +140,10 @@ class Rotor(MappingComponent):
 		# self.currentPosition = startingPosition
 		self.turnoverPosition = (turnoverPosition - ringSettingOffset) % 26
 		self.currentPosition = (startingPosition - ringSettingOffset) % 26
+
+		self.turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns
+
+		self.primedToTurn = False
 	
 
 	@classmethod
@@ -214,18 +218,35 @@ class EngimaMachine():
 		
 		oldRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
 
-		currentRotorIndex = 0 
-		turnNextRotor = True
+		self.rotorList[0].primedToTurn = True
+		rotorsToTurnList = [rotorIndexTuple for rotorIndexTuple in enumerate(self.rotorList) if rotorIndexTuple[1].primedToTurn == True]
 
-		while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
-			# print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
-			turnNextRotor = self.rotorList[currentRotorIndex].turnRotor()
-			currentRotorIndex += 1
+		for rotorIndexTuple in rotorsToTurnList:
+			rotorToTurn = rotorIndexTuple[1]
+			rotorIndexInMachineList = rotorIndexTuple[0]
+
+			primeNextRotorToTurn = rotorToTurn.turnRotor()
+			
+			if rotorIndexInMachineList < len(self.rotorList) - 1:
+				self.rotorList[rotorIndexInMachineList + 1].primedToTurn = primeNextRotorToTurn
+
+			if rotorIndexInMachineList > 0:
+				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns:
+					self.rotorList[rotorIndexInMachineList].primedToTurn = self.rotorList[rotorIndexInMachineList - 1].turnRotor() # Allows for double setting, if dealing with multiple turnover points, will need to save the returned value
+
+		# while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
+		# 	print(f"Checking rotor '{rotorList[currentRotorIndex].name}'")
+		# 	# print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
+		# 	turnNextRotorNextLetter = self.rotorList[currentRotorIndex].turnRotor()
+
+		# 	print(f"Turning next rotor: {turnNextRotor}")
+		# 	print('Due to current position and turnover position:', self.rotorList[currentRotorIndex].currentPosition, self.rotorList[currentRotorIndex].turnoverPosition)
+		# 	currentRotorIndex += 1
 
 		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
 
-		print(f'Turned wheel from {oldRotorPositons[::-1]} to {newRotorPositons[::-1]}')
-		print()
+		# print(f'Turned wheel from {oldRotorPositons[::-1]} to {newRotorPositons[::-1]}')
+		# print()
 	
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
@@ -248,7 +269,7 @@ class EngimaMachine():
 		for currentRotorIndex in range(startingRotorIndex, endingRotorIndex, changeInIndex):
 			oldLetter = currentSignal
 			currentSignal = self.rotorList[currentRotorIndex].mapLetter(currentSignal, reverseOrder)
-			print(f'Rotor: {self.rotorList[currentRotorIndex].name}, Input: {string.ascii_uppercase[oldLetter]}, Output: {string.ascii_uppercase[currentSignal]}')
+			# print(f'Rotor: {self.rotorList[currentRotorIndex].name}, Input: {string.ascii_uppercase[oldLetter]}, Output: {string.ascii_uppercase[currentSignal]}')
 		
 		return currentSignal
 
@@ -262,7 +283,7 @@ class EngimaMachine():
 		signalFromPlugboard = string.ascii_uppercase.find(letterFromPlugboard0)
 		letterSignalFromRotors0 = self.processLetterSignalInRotors(signalFromPlugboard)
 		reflectedLetter = self.reflector.mapLetter(letterSignalFromRotors0)
-		print('Reflected letter:', string.ascii_uppercase[reflectedLetter])
+		# print('Reflected letter:', string.ascii_uppercase[reflectedLetter])
 		letterSignalFromRotors1 = self.processLetterSignalInRotors(reflectedLetter, reverseOrder=True)
 		letterFromRotorProcess = string.ascii_uppercase[letterSignalFromRotors1]
 
@@ -279,12 +300,12 @@ class EngimaMachine():
 
 		debugIndex = 0
 		for currentCharacter in inputString:
-			print()
-			print()
-			print('####### ' + inputString + ' #######')
-			print('        ' + ' '*debugIndex + '^')
-			print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
-			print()
+			# print()
+			# print()
+			# print('####### ' + inputString + ' #######')
+			# print('        ' + ' '*debugIndex + '^')
+			# print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
+			# print()
 
 			
 
@@ -308,8 +329,8 @@ if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
 	# The turnover values are 0-indexed
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 18, 0, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 20, 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 16, 0, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0, turnWhenRotorToLeftTurns=True)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
@@ -318,7 +339,7 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
-	output = engimaMachine.processStringOfLetters('TEST THE BEST BEST THE TEST OF THE BEST ICE CREAM AROUND THE WORLD TODAY INCLUDING NEW ZEALAND AND THE LAND AROUND THE MOUTH OF THE ARCTIC SEA')
+	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyearsandappliedmyselfclosetomystudiesbutthechargeofmaintainingmealthoughIhadaveryscantyallowancebeingtoogreatforanarrowfortuneIwasboundapprenticetoMrJamesBatesaneminentsurgeoninLondonwithwhomIcontinuedfouryearsandmyfathernowandthensendingmesmallsumsofmoneyIlaidthemoutinlearningnavigationandotherpartsofthemathematicsusefultothosewhointendtotravelasIalwaysbelieveditwouldbesometimeorothermyfortunetodoWhenIleftMrBatesIwentdowntomyfatherwherebytheassistanceofhimandmyuncleJohnandsomeotherrelationsIgotfortypoundsandapromiseofthirtypoundsayeartomaintainmeatLeydenThereIstudiedphysictwoyearsandsevenmonthsknowingitwouldbeusefulinlongvoyagesSoonaftermyreturnfromLeydenIwasrecommendedbymygoodmasterMrBatestobesurgeontotheSwallowCaptainAbrahamPannellcommanderwithwhomIcontinuedthreeyearsandahalfmakingavoyageortwointotheLevantandsomeotherpartsWhenIcamebackIresolvedtosettleinLondontowhichMrBatesmymasterencouragedmeandbyhimIwasrecommendedtoseveralpatientsItookpartofasmallhouseintheOldJewryandbeingadvisedtoaltermyconditionImarriedMrsMaryBurtonseconddaughtertoMrEdmundBurtonhosierinNewgateStreetwithwhomIreceivedfourhundredpoundsforaportionButmygoodmasterBatesdyingintwoyearsafterandIhavingfewfriendsmybusinessbegantofailformyconsciencewouldnotsuffermetoimitatethebadpracticeoftoomanyamongmybrethrenHavingthereforeconsultedwithmywifeandsomeofmyacquaintanceIdeterminedtogoagaintoseaIwassurgeonsuccessivelyintwoshipsandmadeseveralvoyagesforsixyearstotheEastandWestIndiesbywhichIgotsomeadditiontomyfortuneMyhoursofleisureIspentinreadingthebestauthorsancientandmodernbeingalwaysprovidedwithagoodnumberofbooksandwhenIwasashoreinobservingthemannersanddispositionsofthepeopleaswellaslearningtheirlanguagewhereinIhadagreatfacilitybythestrengthofmymemoryThelastofthesevoyagesnotprovingveryfortunateIgrewwearyoftheseaandintendedtostayathomewithmywifeandfamilyIremovedfromtheOldJewrytoFetterLaneandfromthencetoWappinghopingtogetbusinessamongthesailorsbutitwouldnotturntoaccountAfterthreeyearsexpectationthatthingswouldmendIacceptedanadvantageousofferfromCaptainWilliamPrichardmasteroftheAntelopewhowasmakingavoyagetotheSouthSeaWesetsailfromBristolMayandourvoyageatfirstwasveryprosperousItwouldnotbeproperforsomereasonstotroublethereaderwiththeparticularsofouradventuresinthoseseasLetitsufficetoinformhimthatinourpassagefromthencetotheEastIndiesweweredrivenbyaviolentstormtothenorthwestofVanDiemensLandByanobservationwefoundourselvesinthelatitudeofdegreesandminutessouthTwelveofourcrewweredeadbyimmoderatelaborandillfoodtherestwereinaveryweakconditionOnthefifthofNovemberwhichwasthebeginningofsummerinthosepartstheweatherbeingveryhazytheseamenspiedarockwithinhalfacableslengthoftheshipbutthewindwassostrongthatweweredrivendirectlyuponitandimmediatelysplitSixofthecrewofwhomIwasonehavingletdowntheboatintotheseamadeashifttogetclearoftheshipandtherockWerowedbymycomputationaboutthreeleaguestillwewereabletoworknolongerbeingalreadyspentwithlaborwhilewewereintheshipWethereforetrustedourselvestothemercyofthewavesandinabouthalfanhourtheboatwasoversetbyasuddenflurryfromthenorthWhatbecameofmycompanionsintheboataswellasthosewhoescapedontherockorwereleftinthevesselIcannottellbutconcludetheywerealllostFormyownpartIswamasfortunedirectedmeandwaspushedforwardbywindandtideIoftenletmylegsdropandcouldfeelnobottombutwhenIwasalmostgoneandabletostrugglenolongerIfoundmyselfwithinmydepthandbythistimethestormwasmuchabatedThedeclivitywassosmallthatIwalkednearamilebeforeIgottotheshorewhichIconjecturedwasabouteightoclockintheeveningIthenadvancedforwardnearhalfamilebutcouldnotdiscoveranysignofhousesorinhabitantsatleastIwasinsoweakaconditionthatIdidnotobservethemIwasextremelytiredandwiththatandtheheatoftheweatherandabouthalfapintofbrandythatIdrankasIlefttheshipIfoundmyselfmuchinclinedtosleepIlaydownonthegrasswhichwasveryshortandsoftwhereIsleptsounderthaneverIrememberedtohavedoneinmylifeandasIreckonedaboutninehoursforwhenIawakeditwasjustdaylightIattemptedtorisebutwasnotabletostirforasIhappenedtolieonmybackIfoundmyarmsandlegswerestronglyfastenedoneachsidetothegroundandmyhairwhichwaslongandthicktieddowninthesamemannerIlikewisefeltseveralslenderligaturesacrossmybodyfrommyarmpitstomythighsIcouldonlylookupwardsthesunbegantogrowhotandthelightoffendedmyeyesIheardaconfusednoiseaboutmebutinthepostureIlaycouldseenothingexcepttheskyInalittletimeIfeltsomethingalivemovingonmyleftlegwhichadvancinggentlyforwardovermybreastcamealmostuptomychinwhenbendingmyeyesdownwardasmuchasIcouldIperceivedittobeahumancreaturenotsixincheshighwithabowandarrowinhishandsandaquiverathisbackInthemeantimeIfeltatleastfortymoreofthesamekindasIconjecturedfollowingthefirstIwasintheutmostastonishmentandroaredsoloudthattheyallranbackinafrightandsomeofthemasIwasafterwardstoldwerehurtwiththefallstheygotbyleapingfrommysidesuponthegroundHowevertheysoonreturnedandoneofthemwhoventuredsofarastogetafullsightofmyfaceliftinguphishandsandeyesbywayofadmirationcriedoutinashrillbutdistinctvoiceHekinahdegultheothersrepeatedthesamewordsseveraltimesbutIthenknewnotwhattheymeantIlayallthiswhileasthereadermaybelieveingreatuneasinessAtlengthstrugglingtogetlooseIhadthefortunetobreakthestringsandwrenchoutthepegsthatfastenedmyleftarmtothegroundforbyliftingituptomyfaceIdiscoveredthemethodstheyhadtakentobindmeandatthesametimewithaviolentpullwhichgavemeexcessivepainIalittleloosenedthestringsthattieddownmyhairontheleftsidesothatIwasjustabletoturnmyheadabouttwoinchesButthecreaturesranoffasecondtimebeforeIcouldseizethemwhereupontherewasagreatshoutinaveryshrillaccentandafteritceasedIheardoneofthemcryaloudTolgophonacwheninaninstantIfeltaboveanhundredarrowsdischargedonmylefthandwhichprickedmelikesomanyneedlesandbesidestheyshotanotherflightintotheairaswedobombsinEuropewhereofmanyIsupposefellonmybodythoughIfeltthemnotandsomeonmyfacewhichIimmediatelycoveredwithmylefthandWhenthisshowerofarrowswasoverIfellagroaningwithgriefandpainandthenstrivingagaintogetloosetheydischargedanothervolleylargerthanthefirstandsomeofthemattemptedwithspearstostickmeinthesidesbutbygoodluckIhadonmeabuffjerkinwhichtheycouldnotpierceIthoughtitthemostprudentmethodtoliestillandmydesignwastocontinuesotillnightwhenmylefthandbeingalreadylooseIcouldeasilyfreemyselfandasfortheinhabitantsIhadreasontobelieveImightbeamatchforthegreatestarmytheycouldbringagainstmeiftheywereallofthesamesizewithhimthatIsawButfortunedisposedotherwiseofmeWhenthepeopleobservedIwasquiettheydischargednomorearrowsbutbythenoiseIheardIknewtheirnumbersincreasedandaboutfouryardsfrommeoveragainstmyrightearIheardaknockingforaboveanhourlikethatofpeopleatworkwhenturningmyheadthatwayaswellasthepegsandstringswouldpermitmeIsawastageerectedaboutafootandahalffromthegroundcapableofholdingfouroftheinhabitantswithtwoorthreeladderstomountitfromwhenceoneofthemwhoseemedtobeapersonofqualitymademealongspeechwhereofIunderstoodnotonesyllable')
 	print(output)
 	n=5
 	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))

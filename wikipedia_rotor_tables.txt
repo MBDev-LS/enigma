@@ -23,6 +23,7 @@ Note: Turnover position numbers should be the number for the letter AFTER the on
 
 
 Reflector A 	EJMZALYXVBWFCRQUONTSPIKHGD
+Reflector B 	YRUHQSLDPXNGOKMIEBFZCWVJAT
 
 From: https://en.wikipedia.org/wiki/Enigma_rotor_details
 This version: https://en.wikipedia.org/w/index.php?title=Enigma_rotor_details&oldid=1275803743

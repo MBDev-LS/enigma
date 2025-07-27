@@ -136,8 +136,10 @@ class Rotor(MappingComponent):
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
-		self.turnoverPosition = turnoverPosition
-		self.currentPosition = startingPosition
+		# self.turnoverPosition = turnoverPosition
+		# self.currentPosition = startingPosition
+		self.turnoverPosition = (turnoverPosition - ringSettingOffset) % 26
+		self.currentPosition = (startingPosition - ringSettingOffset) % 26
 	
 
 	@classmethod
@@ -171,9 +173,6 @@ class Rotor(MappingComponent):
 		
 		return outputRotorList
 
-
-
-	
 
 	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
@@ -213,12 +212,20 @@ class EngimaMachine():
 		if len(self.rotorList) == 0:
 			raise Exception('Failed to turn rotors as none are loaded into enigma machine.')
 		
+		oldRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
+
 		currentRotorIndex = 0 
 		turnNextRotor = True
 
 		while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
+			# print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
 			turnNextRotor = self.rotorList[currentRotorIndex].turnRotor()
 			currentRotorIndex += 1
+
+		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
+
+		print(f'Turned wheel from {oldRotorPositons[::-1]} to {newRotorPositons[::-1]}')
+		print()
 	
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
@@ -270,7 +277,18 @@ class EngimaMachine():
 
 		transformedOutputString = ''
 
+		debugIndex = 0
 		for currentCharacter in inputString:
+			print()
+			print()
+			print('####### ' + inputString + ' #######')
+			print('        ' + ' '*debugIndex + '^')
+			print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
+			print()
+
+			
+
+			debugIndex += 1
 			
 			if currentCharacter != ' ':
 				transformedLetter = self.transformLetter(currentCharacter.upper())
@@ -289,15 +307,18 @@ class EngimaMachine():
 if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 0, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 5, 0, 0)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 22, 0, 0)
+	# The turnover values are 0-indexed
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 18, 0, 0)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 20, 0, 0)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
 
 	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
-	reflector = Reflector('Reflector A', 'EJMZALYXVBWFCRQUONTSPIKHGD')
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, False)
-	output = engimaMachine.processStringOfLetters('HELLO WORLD')
+	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
+	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
+	output = engimaMachine.processStringOfLetters('TEST THE BEST BEST THE TEST OF THE BEST ICE CREAM AROUND THE WORLD TODAY INCLUDING NEW ZEALAND AND THE LAND AROUND THE MOUTH OF THE ARCTIC SEA')
 	print(output)
+	n=5
+	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))

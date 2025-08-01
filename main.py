@@ -231,7 +231,7 @@ class EngimaMachine():
 				self.rotorList[rotorIndexInMachineList + 1].primedToTurn = primeNextRotorToTurn
 
 			if rotorIndexInMachineList > 0:
-				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns:
+				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns == True:
 					self.rotorList[rotorIndexInMachineList].primedToTurn = self.rotorList[rotorIndexInMachineList - 1].turnRotor() # Allows for double setting, if dealing with multiple turnover points, will need to save the returned value
 
 		# while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
@@ -330,7 +330,7 @@ if __name__ == '__main__':
 	
 	# The turnover values are 0-indexed
 	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 16, 0, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0, turnWhenRotorToLeftTurns=True)
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0, turnWhenRotorToLeftTurns=True) # Only matches step-by-step output when True (not when it is False and the boxes are unticked on the website)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]

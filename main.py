@@ -132,13 +132,27 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	def __init__(self, name: str, rightMappingSequence: str, turnoverPosition: int, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
+	@staticmethod
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True, allowSpaceCharacter=False, ignoreFirstArgument=False)
+	def convertLetterToNumericTurnoverPosition(letterToConvert: str) -> int:
+		uppercaseLetterToConvert = letterToConvert.upper()
+
+		# Note the -1, as we must prime the next rotor
+		# on the key press before it should turn.
+		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert) - 1
+
+		return numericalTurnoverPrimeingPosition
+
+
+	def __init__(self, name: str, rightMappingSequence: str, turnoverPositionLetter: str, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
-		# self.turnoverPosition = turnoverPosition
+		# self.numericalTurnoverPrimeingPosition = turnoverPosition
 		# self.currentPosition = startingPosition
-		self.turnoverPosition = (turnoverPosition - ringSettingOffset) % 26
+
+		numericalTurnoverPosition = self.convertLetterToNumericTurnoverPosition(turnoverPositionLetter)
+		self.numericalTurnoverPrimeingPosition = (numericalTurnoverPosition - ringSettingOffset) % 26
 		self.currentPosition = (startingPosition - ringSettingOffset) % 26
 
 		self.turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns
@@ -181,7 +195,7 @@ class Rotor(MappingComponent):
 	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
 
-		turnoverTriggered = self.currentPosition == self.turnoverPosition
+		turnoverTriggered = self.currentPosition == self.numericalTurnoverPrimeingPosition
 		return turnoverTriggered
 	
 
@@ -229,13 +243,13 @@ class EngimaMachine():
 			
 			if rotorIndexInMachineList < len(self.rotorList) - 1:
 				self.rotorList[rotorIndexInMachineList + 1].primedToTurn = primeNextRotorToTurn
-				print(f"Rotor: {rotorToTurn.name}\n Current Position: {rotorToTurn.currentPosition}\n Turnover Position: {rotorToTurn.turnoverPosition}")
-				print(' Next Rotor Primed?', primeNextRotorToTurn, '\n')
-				
-
+			
 			if rotorIndexInMachineList > 0:
 				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns:
 					self.rotorList[rotorIndexInMachineList].primedToTurn = self.rotorList[rotorIndexInMachineList - 1].turnRotor() # Allows for double setting, if dealing with multiple turnover points, will need to save the returned value
+			
+			print(f"Rotor: {rotorToTurn.name}\n Current Position: {rotorToTurn.currentPosition}\n Turnover Position: {rotorToTurn.numericalTurnoverPrimeingPosition}")
+			print(' Next Rotor Primed?', primeNextRotorToTurn, '\n')
 
 		# while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
 		# 	print(f"Checking rotor '{rotorList[currentRotorIndex].name}'")
@@ -243,7 +257,7 @@ class EngimaMachine():
 		# 	turnNextRotorNextLetter = self.rotorList[currentRotorIndex].turnRotor()
 
 		# 	print(f"Turning next rotor: {turnNextRotor}")
-		# 	print('Due to current position and turnover position:', self.rotorList[currentRotorIndex].currentPosition, self.rotorList[currentRotorIndex].turnoverPosition)
+		# 	print('Due to current position and turnover position:', self.rotorList[currentRotorIndex].currentPosition, self.rotorList[currentRotorIndex].numericalTurnoverPrimeingPosition)
 		# 	currentRotorIndex += 1
 
 		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
@@ -332,9 +346,9 @@ if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
 	# The turnover values are 0-indexed
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 17, 0, 0)
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 4, 0, 0, turnWhenRotorToLeftTurns=False)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 21, 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 0) # 16, as primed at before R
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 0, turnWhenRotorToLeftTurns=True)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 0)
 
 	rotorList = [rotor1, rotor2, rotor3]
 
@@ -342,7 +356,9 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
-	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears')
+	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
 	print(output)
+	import pyperclip
+	pyperclip.copy(output)
 	n=5
 	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))

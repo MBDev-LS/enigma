@@ -5574,7 +5574,7 @@ including how to make donations to the Project Gutenberg Literary
 Archive Foundation, how to help produce our new eBooks, and how to
 subscribe to our email newsletter to hear about new eBooks.
 '''
-
+# From: https://www.gutenberg.org/ebooks/17157
 testText = ''
 
 for i, char in enumerate(bookText):

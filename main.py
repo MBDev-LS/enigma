@@ -245,7 +245,7 @@ class EngimaMachine():
 				self.rotorList[rotorIndexInMachineList + 1].primedToTurn = primeNextRotorToTurn
 			
 			if rotorIndexInMachineList > 0:
-				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns:
+				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns == True:
 					self.rotorList[rotorIndexInMachineList].primedToTurn = self.rotorList[rotorIndexInMachineList - 1].turnRotor() # Allows for double setting, if dealing with multiple turnover points, will need to save the returned value
 			
 			print(f"Rotor: {rotorToTurn.name}\n Current Position: {rotorToTurn.currentPosition}\n Turnover Position: {rotorToTurn.numericalTurnoverPrimeingPosition}")

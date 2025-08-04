@@ -355,5 +355,5 @@ if __name__ == '__main__':
 	n=5
 	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))
 
-	import pyperclip
-	pyperclip.copy(output)
+	# import pyperclip
+	# pyperclip.copy(output)

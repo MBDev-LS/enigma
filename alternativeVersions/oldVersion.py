@@ -1,18 +1,10 @@
 
-# Old 'Perfect Mechanism' version
+# V0.1 - Old Version
 
-# Identical to the current version when double stepping
-# is enabled, but with a slightly weird 'fix' for
-# double stepping when it's not.
-# 
-# While it may have some utility, I think the current
-# version's 'no double stepping' mode is probably
-# closer to what people expect when talking about
-# fixing the issues caused by the pawl and ratched
-# mechanism in the rotors.
-
-# For more on double stepping, see: https://www.cryptomuseum.com/people/hamer/files/double_stepping.pdf
-# Archived here: https://web.archive.org/web/20250605201230/https://cryptomuseum.com/people/hamer/files/double_stepping.pdf
+# This version is more complicated, and potentially
+# slightly slower than the current version.
+# However, I kept it around as it better mimics the
+# actual workings of the machine in how it is structured.
 
 
 import string
@@ -151,7 +143,9 @@ class Rotor(MappingComponent):
 	def convertLetterToNumericTurnoverPosition(letterToConvert: str) -> int:
 		uppercaseLetterToConvert = letterToConvert.upper()
 
-		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert)
+		# Note the -1, as we must prime the next rotor
+		# on the key press before it should turn.
+		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert) - 1
 
 		return numericalTurnoverPrimeingPosition
 
@@ -164,19 +158,20 @@ class Rotor(MappingComponent):
 		# self.currentPosition = startingPosition
 
 		numericalTurnoverPosition = self.convertLetterToNumericTurnoverPosition(turnoverPositionLetter)
-		self.numericalTurnoverPosition = (numericalTurnoverPosition - ringSettingOffset) % 26
+		self.numericalTurnoverPrimeingPosition = (numericalTurnoverPosition - ringSettingOffset) % 26
 		self.currentPosition = (startingPosition - ringSettingOffset) % 26
 
 		self.turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns
+
+		self.primedToTurn = False
 	
 
 	@classmethod
-	def loadRotorListFromJson(cls, jsonFilePath: str | Path, ringSettingOffsets: list[int], startingPositions: list[int], leftMappingSequences: list[str] | None=None, turnWhenRotorToLeftTurns: list[bool] | None=None) -> list:
+	def loadRotorListFromJson(cls, jsonFilePath: str | Path, ringSettingOffsets: list[int], startingPositions: list[int], leftMappingSequences: list[str] | None=None) -> list:
 		with open(jsonFilePath, 'r') as jsonRotorFile:
 			rotorDictsList = json.loads(jsonRotorFile.read())
 
 		leftMappingSequences = leftMappingSequences if leftMappingSequences != None else [string.ascii_uppercase] * len(rotorDictsList)
-		turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns if turnWhenRotorToLeftTurns != None else [False] * len(rotorDictsList)
 
 		if len(rotorDictsList) != len(ringSettingOffsets):
 			errorDescriptor = 'few' if len(ringSettingOffsets) < len(ringSettingOffsets) else 'many'
@@ -190,29 +185,22 @@ class Rotor(MappingComponent):
 			errorDescriptor = 'few' if len(leftMappingSequences) < len(rotorDictsList) else 'many'
 
 			raise IndexError(f"Failed to load rotors from JSON, too {errorDescriptor} left mapping sequences provided in leftMappingSequences tuple '{leftMappingSequences}'. ({len(leftMappingSequences)} provided for {len(rotorDictsList)} rotors.)")
-		elif len(rotorDictsList) != len(turnWhenRotorToLeftTurns):
-			errorDescriptor = 'few' if len(turnWhenRotorToLeftTurns) < len(rotorDictsList) else 'many'
-
-			raise IndexError(f"Failed to load rotors from JSON, too {errorDescriptor} left mapping sequences provided in leftMappingSequences tuple '{turnWhenRotorToLeftTurns}'. ({len(turnWhenRotorToLeftTurns)} provided for {len(rotorDictsList)} rotors.)")
 		
 		outputRotorList = []
 
 		for rotorIndex, rotorDict in enumerate(rotorDictsList):
 
-			newRotor = cls(rotorDict['name'], rotorDict['mapping_string'], rotorDict['turnover_notch_position'], ringSettingOffsets[rotorIndex], startingPositions[rotorIndex], leftMappingSequences[rotorIndex], turnWhenRotorToLeftTurns[rotorIndex])
+			newRotor = cls(rotorDict['name'], rotorDict['mapping_string'], rotorDict['turnover_notch_position'], ringSettingOffsets[rotorIndex], startingPositions[rotorIndex], leftMappingSequences[rotorIndex])
 
 			outputRotorList.append(newRotor)
 		
 		return outputRotorList
 
 
-	def turnRotor(self) -> None:
+	def turnRotor(self) -> bool:
 		self.currentPosition = (self.currentPosition + 1) % 26 # Note that this is 26, not 27, due to the aforementioned (and potentially ill-advised) 0-indexing.
 
-
-	def checkForTurnoverState(self) -> bool:
-		turnoverTriggered = self.currentPosition + 1 == self.numericalTurnoverPosition
-
+		turnoverTriggered = self.currentPosition == self.numericalTurnoverPrimeingPosition
 		return turnoverTriggered
 	
 
@@ -249,32 +237,39 @@ class EngimaMachine():
 		
 		oldRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
 
-		turnoverStatesAtStartOfTurn = [rotor.checkForTurnoverState() for rotor in self.rotorList]
+		self.rotorList[0].primedToTurn = True
+		rotorsToTurnList = [rotorIndexTuple for rotorIndexTuple in enumerate(self.rotorList) if rotorIndexTuple[1].primedToTurn == True]
 
-		self.rotorList[0].turnRotor()
+		for rotorIndexTuple in rotorsToTurnList:
+			rotorToTurn = rotorIndexTuple[1]
+			rotorIndexInMachineList = rotorIndexTuple[0]
 
-		# For loop does not include the left most rotor
-		# index, as there's no need to check its turnover
-		# state. 
+			primeNextRotorToTurn = rotorToTurn.turnRotor()
+			
+			if rotorIndexInMachineList < len(self.rotorList) - 1:
+				self.rotorList[rotorIndexInMachineList + 1].primedToTurn = primeNextRotorToTurn
+			
+			if rotorIndexInMachineList > 0:
+				if self.rotorList[rotorIndexInMachineList - 1].turnWhenRotorToLeftTurns:
+					self.rotorList[rotorIndexInMachineList].primedToTurn = self.rotorList[rotorIndexInMachineList - 1].turnRotor() # Allows for double setting, if dealing with multiple turnover points, will need to save the returned value
+			
+			print(f"Rotor: {rotorToTurn.name}\n Current Position: {rotorToTurn.currentPosition}\n Turnover Position: {rotorToTurn.numericalTurnoverPrimeingPosition}")
+			print(' Next Rotor Primed?', primeNextRotorToTurn, '\n')
 
-		for currentRotorIndex in range(1, len(self.rotorList)): 
-			currentRotor = self.rotorList[currentRotorIndex]
-			previousRotorToRight = self.rotorList[currentRotorIndex - 1]
+		# while turnNextRotor == True and currentRotorIndex < len(self.rotorList):
+		# 	print(f"Checking rotor '{rotorList[currentRotorIndex].name}'")
+		# 	# print(f"Turning Rotor '{self.rotorList[currentRotorIndex].name}'")
+		# 	turnNextRotorNextLetter = self.rotorList[currentRotorIndex].turnRotor()
 
-			if turnoverStatesAtStartOfTurn[currentRotorIndex - 1] == True: # do that thing and -1 to the turnover state?
-				currentRotor.turnRotor()
-
-				if previousRotorToRight.turnWhenRotorToLeftTurns == True:
-					previousRotorToRight.turnRotor()
-				
-				# print(f"Rotor: {rotorToTurn.name}\n Current Position: {rotorToTurn.currentPosition}\n Turnover Position: {rotorToTurn.numericalTurnoverPrimeingPosition}")
-				# print(' Next Rotor Primed?', primeNextRotorToTurn, '\n')
+		# 	print(f"Turning next rotor: {turnNextRotor}")
+		# 	print('Due to current position and turnover position:', self.rotorList[currentRotorIndex].currentPosition, self.rotorList[currentRotorIndex].numericalTurnoverPrimeingPosition)
+		# 	currentRotorIndex += 1
 
 		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
 
 		print(f'Turned wheel from {oldRotorPositons[::-1]} to {newRotorPositons[::-1]}')
 		print()
-
+	
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def processLetterInPlugboard(self, letterToProcess: str) -> str:
@@ -334,6 +329,8 @@ class EngimaMachine():
 			print(f"Current character: '{currentCharacter}'\nPosition: {debugIndex}")
 			print()
 
+			
+
 			debugIndex += 1
 			
 			if currentCharacter != ' ':
@@ -358,17 +355,15 @@ if __name__ == '__main__':
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 0, turnWhenRotorToLeftTurns=True)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 0)
 
-	# rotorList = [rotor1, rotor2, rotor3]
+	rotorList = [rotor1, rotor2, rotor3]
 
-	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors1.json', [0, 0, 0], [0, 0, 0], None, [False, True, False])
+	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
-	output = engimaMachine.processStringOfLetters('Hello!') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
+	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
 	print(output)
-
-	n=5
-	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))
-
 	import pyperclip
 	pyperclip.copy(output)
+	n=5
+	print(' '.join([output[i:i+n] for i in range(0, len(output), n)]))

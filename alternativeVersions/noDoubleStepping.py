@@ -196,7 +196,7 @@ class Rotor(MappingComponent):
 
 
 	def checkForTurnoverState(self) -> bool:
-		turnoverTriggered = self.currentPosition + 1 == self.numericalTurnoverPosition
+		turnoverTriggered = self.currentPosition == self.numericalTurnoverPosition
 
 		return turnoverTriggered
 	
@@ -246,11 +246,8 @@ class EngimaMachine():
 			currentRotor = self.rotorList[currentRotorIndex]
 			previousRotorToRight = self.rotorList[currentRotorIndex - 1]
 
-			if turnoverStatesAtStartOfTurn[currentRotorIndex - 1] == True: # do that thing and -1 to the turnover state?
+			if previousRotorToRight.checkForTurnoverState() == True: # do that thing and -1 to the turnover state?
 				currentRotor.turnRotor()
-
-				if previousRotorToRight.turnWhenRotorToLeftTurns == True:
-					previousRotorToRight.turnRotor()
 
 		newRotorPositons = ''.join([string.ascii_uppercase[rotor.currentPosition] for rotor in self.rotorList])
 

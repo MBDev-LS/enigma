@@ -13,15 +13,5 @@
 		"name": "III",
 		"mapping_string": "BDFHJLCPRTXVZNYEIWGAKMUSQO",
 		"turnover_notch_position": "W"
-	},
-	{
-		"name": "VI",
-		"mapping_string": "ESOVPZJAYQUIRHXLNFTGKDCMWB",
-		"turnover_notch_position": "J"
-	},
-	{
-		"name": "V",
-		"mapping_string": "VZBRGITYUPSDNHLXAWMJQOFECK",
-		"turnover_notch_position": "Z"
 	}
 ]

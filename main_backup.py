@@ -183,9 +183,8 @@ class Rotor(MappingComponent):
 		outputRotorList = []
 
 		for rotorIndex, rotorDict in enumerate(rotorDictsList):
-			turnoverIntegerPosition = rotorDict['mapping_string'].find(rotorDict['turnover_notch_position'])
 
-			newRotor = cls(rotorDict['name'], rotorDict['mapping_string'], turnoverIntegerPosition, ringSettingOffsets[rotorIndex], startingPositions[rotorIndex], leftMappingSequences[rotorIndex])
+			newRotor = cls(rotorDict['name'], rotorDict['mapping_string'], rotorDict['turnover_notch_position'], ringSettingOffsets[rotorIndex], startingPositions[rotorIndex], leftMappingSequences[rotorIndex])
 
 			outputRotorList.append(newRotor)
 		
@@ -352,7 +351,7 @@ if __name__ == '__main__':
 
 	rotorList = [rotor1, rotor2, rotor3]
 
-	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
+	rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors.json', [0, 0, 0, 0, 0], [0, 0, 0, 0, 0])
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)

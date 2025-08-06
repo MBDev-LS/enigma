@@ -11,6 +11,9 @@ Beta		LEYJVCNIXWPBQMDRTAKZGFUHOS
 
 ReflectA 	EJMZALYXVBWFCRQUONTSPIKHGD
 
+
+########## WARNING: TURNOVER POSITIONS MAY BE WRONG, REFER TO THOSE LINKED IN tests/testing_output.txt ##########
+
 TURNOVER NOTCH POSITIONS - THESE MAY BE WRONG
 Rotor 		Notch 		Effect
 I 			Q 			If rotor steps from Q to R, the next rotor is advanced
@@ -20,6 +23,8 @@ IV 			J 			If rotor steps from J to K, the next rotor is advanced
 V 			Z 			If rotor steps from Z to A, the next rotor is advanced 
 
 Note: Turnover position numbers should be the number for the letter AFTER the one in the notch column.
+
+########## WARNING: TURNOVER POSITIONS MAY BE WRONG, REFER TO THOSE LINKED IN tests/testing_output.txt ##########
 
 
 Reflector A 	EJMZALYXVBWFCRQUONTSPIKHGD

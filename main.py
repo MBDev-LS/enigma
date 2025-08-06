@@ -1,6 +1,7 @@
 
 import string
 import json
+import re
 
 from utils import forceOnlyLetterStringsArgs
 
@@ -40,30 +41,52 @@ class PlugboardConnection():
 
 
 class Plugboard():
-	def __init__(self, connectionsList: list[PlugboardConnection] | None=None) -> None:
-		self.connectionsList = connectionsList if connectionsList != None else []
+	def __init__(self, stringOfPairs: str | None = None) -> None:
+		# String of pairs must be a string containing
+		# only pairs of letters in the latin/roman alphabet,
+		# seperated by a space. (Any regex whitespace character
+		# will be accepted.) Letters must not appear
+		# in more than one pair.
+		# e.g. 'AB FN PK QR'. 
+		# 
+		# To leave plugboard clear, use blank string.
+		# (Or just don't provide a plugboard when
+		# initialising the machine.)
+		self.connectionsList = self.convertStringOfPairsToConnectionList(stringOfPairs) if stringOfPairs != None else []
 
-		if self.validateconnectionsList() != True:
-			raise Exception(f"Invalid connectionsList '{connectionsList}'. Must not contain two or more PlugboardConnections with the same letter.")
-	
 
 	def __str__(self) -> str:
 		return f'<Plugboard [{", ".join([str(connection) for connection in self.connectionsList])}]>'
+	
+	
+	def __validateStringOfPairs(self, stringOfPairs: str):
+		
+		validBasicFormat = re.match(r'^(([a-zA-Z]{2})(\s[a-zA-Z]{2})*)?$', stringOfPairs)
 
-	
-	def validateconnectionsList(self, targetconnectionsList: list[PlugboardConnection] | None=None) -> bool:
-		targetList = targetconnectionsList if targetconnectionsList != None else self.connectionsList
+		if validBasicFormat is None:
+			raise ValueError(f"stringOfPairs '{stringOfPairs}' is not the correct format. See __init__ for detailed format info.")
+		
+		stringWithoutSpaces = re.sub(r'\s', '', stringOfPairs)
+		listOfLettersInString = [letter for letter in stringWithoutSpaces]
+		setOfLettersInString = set(listOfLettersInString)
 
-		lettersWithConnections = []
-		for plugboardConnection in targetList:
-			if plugboardConnection.letter0 in lettersWithConnections or plugboardConnection.letter1 in lettersWithConnections:
-				return False
-			
-			lettersWithConnections.append(plugboardConnection.letter0)
-			lettersWithConnections.append(plugboardConnection.letter1)
-	
-		return True
-	
+		if len(listOfLettersInString) != len(setOfLettersInString):
+			raise ValueError('stringOfPairs must not contain repeated letters. See __init__ for detailed format info.')
+
+
+	def convertStringOfPairsToConnectionList(self, stringOfPairs: str) -> list[PlugboardConnection]:
+		self.__validateStringOfPairs(stringOfPairs)
+		
+		listOfPairsStrings = re.split(r'\r', stringOfPairs)
+
+		outputConnectionsList = []
+
+		for pairString in listOfPairsStrings:
+			if pairString != '':
+				outputConnectionsList.append(PlugboardConnection(pairString[0], pairString[1]))
+
+		return outputConnectionsList
+
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def getConnectionByLetter(self, targetLetter: str) -> PlugboardConnection | None:
@@ -219,8 +242,8 @@ class Reflector(MappingComponent):
 
 
 class EngimaMachine():
-	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector: Reflector, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ') -> None:
-		self.plugboard = plugboard
+	def __init__(self, rotorList: list[Rotor], reflector: Reflector, plugboard: Plugboard | None=None, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ') -> None:
+		self.plugboard = plugboard if plugboard != None else Plugboard('')
 		self.rotorList = rotorList
 		self.reflector = reflector
 		
@@ -333,9 +356,8 @@ class EngimaMachine():
 
 
 if __name__ == '__main__':
-	plugboard = Plugboard([])
+	plugboard = Plugboard('')
 	
-	# The turnover values are 0-indexed
 	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 'A') # 16, as primed at before R
 	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 'A', turnWhenRotorToLeftTurns=True)
 	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 'A')
@@ -345,8 +367,8 @@ if __name__ == '__main__':
 	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors1.json', [0, 0, 0], [0, 0, 0], None, [False, True, False])
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
-	output = engimaMachine.processStringOfLetters('DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
+	engimaMachine = EngimaMachine(rotorList, reflector, plugboard, True)
+	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
 	print(output)
 
 	n=5

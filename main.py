@@ -9,7 +9,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 
-
 class PlugboardConnection():
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def __init__(self, letter0: str, letter1: str) -> None:
@@ -242,7 +241,7 @@ class Reflector(MappingComponent):
 
 
 class EngimaMachine():
-	def __init__(self, rotorList: list[Rotor], reflector: Reflector, plugboard: Plugboard | None=None, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ') -> None:
+	def __init__(self, rotorList: list[Rotor], reflector: Reflector, plugboard: Plugboard | None=None, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ', preservePunctuation: bool = True) -> None:
 		self.plugboard = plugboard if plugboard != None else Plugboard('')
 		self.rotorList = rotorList
 		self.reflector = reflector
@@ -376,5 +375,4 @@ if __name__ == '__main__':
 
 	# import pyperclip
 	# pyperclip.copy(output)
-
 

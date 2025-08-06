@@ -131,28 +131,28 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	@staticmethod
-	@forceOnlyLetterStringsArgs(limitLengthToOne=True, allowSpaceCharacter=False, ignoreFirstArgument=False)
-	def convertLetterToNumericTurnoverPosition(letterToConvert: str) -> int:
-		uppercaseLetterToConvert = letterToConvert.upper()
-
-		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert)
-
-		return numericalTurnoverPrimeingPosition
-
-
-	def __init__(self, name: str, rightMappingSequence: str, turnoverPositionLetter: str, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
+	def __init__(self, name: str, rightMappingSequence: str, turnoverPositionLetter: str, ringSettingOffset: int, startingPosition: str, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
 		# self.numericalTurnoverPrimeingPosition = turnoverPosition
 		# self.currentPosition = startingPosition
 
-		numericalTurnoverPosition = self.convertLetterToNumericTurnoverPosition(turnoverPositionLetter)
+		numericalTurnoverPosition = self.convertLetterToNumericPosition(turnoverPositionLetter)
 		self.numericalTurnoverPosition = (numericalTurnoverPosition - ringSettingOffset) % 26
-		self.currentPosition = (startingPosition - ringSettingOffset) % 26
+		self.currentPosition = (self.convertLetterToNumericPosition(startingPosition) - ringSettingOffset) % 26
 
 		self.turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns
+	
+
+	@staticmethod
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True, allowSpaceCharacter=False, ignoreFirstArgument=False)
+	def convertLetterToNumericPosition(letterToConvert: str) -> int:
+		uppercaseLetterToConvert = letterToConvert.upper()
+
+		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert)
+
+		return numericalTurnoverPrimeingPosition
 	
 
 	@classmethod
@@ -336,9 +336,9 @@ if __name__ == '__main__':
 	plugboard = Plugboard([])
 	
 	# The turnover values are 0-indexed
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 0) # 16, as primed at before R
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 0, turnWhenRotorToLeftTurns=True)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 'A') # 16, as primed at before R
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 'A', turnWhenRotorToLeftTurns=True)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 'A')
 
 	rotorList = [rotor1, rotor2, rotor3]
 
@@ -346,7 +346,7 @@ if __name__ == '__main__':
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
 	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
-	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
+	output = engimaMachine.processStringOfLetters('DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
 	print(output)
 
 	n=5
@@ -354,3 +354,5 @@ if __name__ == '__main__':
 
 	# import pyperclip
 	# pyperclip.copy(output)
+
+

@@ -1,12 +1,12 @@
 
 import string
 import json
+import re
 
 from utils import forceOnlyLetterStringsArgs
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
-
 
 
 class PlugboardConnection():
@@ -41,30 +41,52 @@ class PlugboardConnection():
 
 
 class Plugboard():
-	def __init__(self, connectionsList: list[PlugboardConnection] | None=None) -> None:
-		self.connectionsList = connectionsList if connectionsList != None else []
+	def __init__(self, stringOfPairs: str | None = None) -> None:
+		# String of pairs must be a string containing
+		# only pairs of letters in the latin/roman alphabet,
+		# seperated by a space. (Any regex whitespace character
+		# will be accepted.) Letters must not appear
+		# in more than one pair.
+		# e.g. 'AB FN PK QR'. 
+		# 
+		# To leave plugboard clear, use blank string.
+		# (Or just don't provide a plugboard when
+		# initialising the machine.)
+		self.connectionsList = self.convertStringOfPairsToConnectionList(stringOfPairs) if stringOfPairs != None else []
 
-		if self.validateconnectionsList() != True:
-			raise Exception(f"Invalid connectionsList '{connectionsList}'. Must not contain two or more PlugboardConnections with the same letter.")
-	
 
 	def __str__(self) -> str:
 		return f'<Plugboard [{", ".join([str(connection) for connection in self.connectionsList])}]>'
+	
+	
+	def __validateStringOfPairs(self, stringOfPairs: str):
+		
+		validBasicFormat = re.match(r'^(([a-zA-Z]{2})(\s[a-zA-Z]{2})*)?$', stringOfPairs)
 
-	
-	def validateconnectionsList(self, targetconnectionsList: list[PlugboardConnection] | None=None) -> bool:
-		targetList = targetconnectionsList if targetconnectionsList != None else self.connectionsList
+		if validBasicFormat is None:
+			raise ValueError(f"stringOfPairs '{stringOfPairs}' is not the correct format. See __init__ for detailed format info.")
+		
+		stringWithoutSpaces = re.sub(r'\s', '', stringOfPairs)
+		listOfLettersInString = [letter for letter in stringWithoutSpaces]
+		setOfLettersInString = set(listOfLettersInString)
 
-		lettersWithConnections = []
-		for plugboardConnection in targetList:
-			if plugboardConnection.letter0 in lettersWithConnections or plugboardConnection.letter1 in lettersWithConnections:
-				return False
-			
-			lettersWithConnections.append(plugboardConnection.letter0)
-			lettersWithConnections.append(plugboardConnection.letter1)
-	
-		return True
-	
+		if len(listOfLettersInString) != len(setOfLettersInString):
+			raise ValueError('stringOfPairs must not contain repeated letters. See __init__ for detailed format info.')
+
+
+	def convertStringOfPairsToConnectionList(self, stringOfPairs: str) -> list[PlugboardConnection]:
+		self.__validateStringOfPairs(stringOfPairs)
+		
+		listOfPairsStrings = re.split(r'\r', stringOfPairs)
+
+		outputConnectionsList = []
+
+		for pairString in listOfPairsStrings:
+			if pairString != '':
+				outputConnectionsList.append(PlugboardConnection(pairString[0], pairString[1]))
+
+		return outputConnectionsList
+
 
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def getConnectionByLetter(self, targetLetter: str) -> PlugboardConnection | None:
@@ -132,28 +154,28 @@ class MappingComponent():
 class Rotor(MappingComponent):
 	# Note: Rotor positions are 0-indexed. Should they be? I don't know, but they are.
 
-	@staticmethod
-	@forceOnlyLetterStringsArgs(limitLengthToOne=True, allowSpaceCharacter=False, ignoreFirstArgument=False)
-	def convertLetterToNumericTurnoverPosition(letterToConvert: str) -> int:
-		uppercaseLetterToConvert = letterToConvert.upper()
-
-		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert)
-
-		return numericalTurnoverPrimeingPosition
-
-
-	def __init__(self, name: str, rightMappingSequence: str, turnoverPositionLetter: str, ringSettingOffset: int, startingPosition: int, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
+	def __init__(self, name: str, rightMappingSequence: str, turnoverPositionLetter: str, ringSettingOffset: int, startingPosition: str, leftMappingSequence: str=string.ascii_uppercase, turnWhenRotorToLeftTurns: bool=False) -> None:
 		super().__init__(name, rightMappingSequence, leftMappingSequence)
 
 		self.ringSettingOffset = ringSettingOffset
 		# self.numericalTurnoverPrimeingPosition = turnoverPosition
 		# self.currentPosition = startingPosition
 
-		numericalTurnoverPosition = self.convertLetterToNumericTurnoverPosition(turnoverPositionLetter)
+		numericalTurnoverPosition = self.convertLetterToNumericPosition(turnoverPositionLetter)
 		self.numericalTurnoverPosition = (numericalTurnoverPosition - ringSettingOffset) % 26
-		self.currentPosition = (startingPosition - ringSettingOffset) % 26
+		self.currentPosition = (self.convertLetterToNumericPosition(startingPosition) - ringSettingOffset) % 26
 
 		self.turnWhenRotorToLeftTurns = turnWhenRotorToLeftTurns
+	
+
+	@staticmethod
+	@forceOnlyLetterStringsArgs(limitLengthToOne=True, allowSpaceCharacter=False, ignoreFirstArgument=False)
+	def convertLetterToNumericPosition(letterToConvert: str) -> int:
+		uppercaseLetterToConvert = letterToConvert.upper()
+
+		numericalTurnoverPrimeingPosition = string.ascii_uppercase.index(uppercaseLetterToConvert)
+
+		return numericalTurnoverPrimeingPosition
 	
 
 	@classmethod
@@ -220,8 +242,8 @@ class Reflector(MappingComponent):
 
 
 class EngimaMachine():
-	def __init__(self, plugboard: Plugboard, rotorList: list[Rotor], reflector: Reflector, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ') -> None:
-		self.plugboard = plugboard
+	def __init__(self, rotorList: list[Rotor], reflector: Reflector, plugboard: Plugboard | None=None, outputOnlyUppercase: bool=True, spaceOutputCharacter: str=' ', preservePunctuation: bool = True) -> None:
+		self.plugboard = plugboard if plugboard != None else Plugboard('')
 		self.rotorList = rotorList
 		self.reflector = reflector
 		
@@ -334,19 +356,18 @@ class EngimaMachine():
 
 
 if __name__ == '__main__':
-	plugboard = Plugboard([])
+	plugboard = Plugboard('')
 	
-	# The turnover values are 0-indexed
-	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 0) # 16, as primed at before R
-	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 0, turnWhenRotorToLeftTurns=True)
-	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 0)
+	rotor1 = Rotor('I', 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', 'R', 0, 'A') # 16, as primed at before R
+	rotor2 = Rotor('II', 'AJDKSIRUXBLHWTMCQGZNPYFVOE', 'F', 0, 'A', turnWhenRotorToLeftTurns=True)
+	rotor3 = Rotor('III', 'BDFHJLCPRTXVZNYEIWGAKMUSQO', 'W', 0, 'A')
 
 	rotorList = [rotor1, rotor2, rotor3]
 
 	# rotorList = Rotor.loadRotorListFromJson(BASE_DIR / 'rotors1.json', [0, 0, 0], [0, 0, 0], None, [False, True, False])
 
 	reflector = Reflector('Reflector B', 'YRUHQSLDPXNGOKMIEBFZCWVJAT')
-	engimaMachine = EngimaMachine(plugboard, rotorList, reflector, True)
+	engimaMachine = EngimaMachine(rotorList, reflector, plugboard, True)
 	output = engimaMachine.processStringOfLetters('MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears') # MyfatherhadasmallestateinNottinghamshireIwasthethirdoffivesonsHesentmetoEmmanuelCollegeinCambridgeatfourteenyearsoldwhereIresidedthreeyears
 	print(output)
 
@@ -355,3 +376,4 @@ if __name__ == '__main__':
 
 	# import pyperclip
 	# pyperclip.copy(output)
+

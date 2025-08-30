@@ -19,6 +19,7 @@ class PlugboardConnection():
 	def __str__(self) -> str:
 		return f'<PlugboardConnection {self.letter0}-{self.letter1}>'
 
+
 	@forceOnlyLetterStringsArgs(limitLengthToOne=True)
 	def checkForLetter(self, letterToCheck: str) -> bool:
 		return letterToCheck == self.letter0 or letterToCheck == self.letter1
@@ -107,8 +108,8 @@ class Plugboard():
 		if connectionToDelete != None:
 			self.removeConnection(connectionToDelete)
 			return True
-		
-		return False
+		else:
+			return False
 
 
 class MappingComponent():
